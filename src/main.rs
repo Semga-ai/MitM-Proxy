@@ -1,8 +1,10 @@
 use std::io::{Error, Read};
 use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
+use std::time::Duration;
 mod codecs;
 
 
+use minstant::Instant;
 use bytes::{ BytesMut};
 use flate2::read::ZlibDecoder;
 use tokio::net::{TcpListener, TcpStream};
@@ -125,10 +127,15 @@ async fn main() {
             let mut writer = writer_socket;
             let mut uncompressed_bytes_buffer = BytesMut::zeroed(BUFFER_SIZE);
             uncompressed_bytes_buffer.clear();
+
+            // let mut q = 0;
+            // let mut time: u128 = 0;
     
             while let Some(src) = frame.next().await {
                 match src {
                     Ok(mut packet_frame) => {
+                        // let start = Instant::now();
+
                         let compressed_lenth = unsafe {
                             get_compressed_lenth(&mut packet_frame)
                         };
@@ -144,7 +151,7 @@ async fn main() {
                         }
 
                         unsafe {
-                            let mut val = final_encode(offset, data, len).unwrap();
+                            let val = final_encode(offset, data, len).unwrap();
 
                             //offset = val.offset;
                             let payload: &mut BytesMut = data;
@@ -168,15 +175,9 @@ async fn main() {
 
                                 //PLAY
                                 4 => {
-                                    let pattern = b"\xc2\xa7n\xc2\xa7o\xc2\xa7m";
-                                    if payload.windows(pattern.len()).any(|window| window == pattern) {
-                                        val.is_need_send = false;
-                                    };
-
-
-                                    let pattern_fair = b"\xc2\xa7f\xc2\xa7a\xc2\xa7i\xc2\xa7r";
-                                    if payload.windows(pattern_fair.len()).any(|window| window == pattern_fair) {
-                                        val.is_need_send = false;
+                                    if payload.len() > 1000000 {
+                                        println!("q")
+                                        //Just to ensure accurate speed measurements, so the compiler doesn't optimize away part of the code. 
                                     }
                                 }
                                 _ => {
@@ -185,6 +186,14 @@ async fn main() {
                             }
 
                             if val.is_need_send {
+                                // let duration = start.elapsed();
+                                // q += 1;
+                                // time += duration.as_nanos();
+                                // if q >= 5000 {
+                                //     println!("{0}",time as f64 / 5000.0);
+                                //     time = 0;
+                                //     q = 0;
+                                // }
                                 match writer.write_all_buf(&mut packet_frame.bytes).await {
                                     Err(e) => {
                                         println!("{e}");
