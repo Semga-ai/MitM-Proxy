@@ -13,7 +13,7 @@ minstant = "0.1"
 
 [profile.release]
 opt-level = 3
-lto = true
+lto = "fat"
 codegen-units = 1
 panic = "abort"
 

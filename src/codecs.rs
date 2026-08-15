@@ -17,7 +17,7 @@ impl Decoder for FragmentCodec {
     
     #[inline(always)]
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        if src.len() < 1 {
+        if src.len() < 2 {
             return Ok(None);
         }
 
