@@ -10,6 +10,8 @@ tokio-util = { version = "0.7", features = ["codec"] }
 futures = "0.3.33"
 flate2 = "1.0"
 minstant = "0.1"
+hex = "0.4.3"
+
 
 [profile.release]
 opt-level = 3
