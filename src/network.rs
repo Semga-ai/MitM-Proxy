@@ -52,12 +52,11 @@ pub async fn tcp_s2c(reader_stream: OwnedReadHalf, writer_socket: OwnedWriteHalf
                 &mut packet_frame,
                 Some(&mut uncompressed_bytes_buffer),
                 length,
-                true,
             )
             .unwrap();
         } else {
             let lng = packet_frame.bytes.len();
-            val = final_encode(&mut packet_frame, None, lng, false).unwrap();
+            val = final_encode(&mut packet_frame, None, lng).unwrap();
         }
 
         //
@@ -146,12 +145,11 @@ pub async fn tcp_c2s(writer_stream: OwnedWriteHalf, reader_socket: OwnedReadHalf
                 &mut packet_frame,
                 Some(&mut uncompressed_bytes_buffer),
                 length,
-                true,
             )
             .unwrap();
         } else {
             let lng = packet_frame.bytes.len();
-            val = final_encode(&mut packet_frame, None, lng, false).unwrap();
+            val = final_encode(&mut packet_frame, None, lng).unwrap();
         }
 
         //

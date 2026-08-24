@@ -7,6 +7,7 @@ use bytes::BytesMut;
 use flate2::read::ZlibDecoder;
 use tokio_util::codec::Decoder;
 
+
 pub struct FragmentCodec {}
 
 pub struct PacketFrame {
@@ -106,15 +107,17 @@ pub fn final_encode(
     frame: &mut PacketFrame,
     bytes: Option<&mut BytesMut>,
     length: usize,
-    is_compressed: bool,
 ) -> Result<FinalPacket, ()> {
     let cur_bytes;
+    let is_compressed;
     match bytes {
         Some(v) => {
             cur_bytes = &v[frame.offset..length];
+            is_compressed = true;
         }
         None => {
             cur_bytes = &frame.bytes[frame.offset..frame.bytes.len()];
+            is_compressed = false;
         }
     }
 
