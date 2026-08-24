@@ -101,6 +101,50 @@ pub fn uncompress(frame: &mut PacketFrame, buffer: &mut [u8]) -> Result<(), ()> 
     Ok(())
 }
 
+#[inline(always)]
+pub fn final_encode(
+    frame: &mut PacketFrame,
+    bytes: Option<&mut BytesMut>,
+    length: usize,
+    is_compressed: bool,
+) -> Result<FinalPacket, ()> {
+    let cur_bytes;
+    match bytes {
+        Some(v) => {
+            cur_bytes = &v[frame.offset..length];
+        }
+        None => {
+            cur_bytes = &frame.bytes[frame.offset..frame.bytes.len()];
+        }
+    }
+
+    let mut position = 0;
+    let mut id_data: u32 = 0;
+
+    loop {
+        let current_byte = cur_bytes.get(position).ok_or(())?;
+        id_data |= ((current_byte & 0x7F) as u32) << (position * 7);
+
+        position += 1;
+        if (current_byte & 0x80) == 0 {
+            break;
+        }
+
+        if position >= 5 {
+            return Err(());
+        }
+    }
+
+    frame.offset += position;
+
+    return Ok(FinalPacket {
+        id: id_data,
+        length: length,
+        is_compressed: is_compressed,
+        is_need_send: true,
+    });
+}
+
 pub struct FinalPacket {
     pub id: u32,
     pub length: usize,
